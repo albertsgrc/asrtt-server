@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "nodemon index.js | pino-pretty -t 'dd/mm HH:MM:ss.l'",
+    "start:dev": "MAX_IDLE_TIME_PASSWORD=admin nodemon index.js | pino-pretty -t 'dd/mm HH:MM:ss.l'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
