@@ -1,0 +1,28 @@
+{
+  "name": "asrtt-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:dev": "nodemon index.js | pino-pretty -t 'dd/mm HH:MM:ss.l'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express-pino-logger": "^4.0.0",
+    "pino": "^5.9.0",
+    "polka": "^0.5.1",
+    "queue": "^4.5.1",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
+    "toggl-api": "^1.0.1",
+    "uws": "^10.148.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.7",
+    "pino-pretty": "^2.3.0"
+  }
+}

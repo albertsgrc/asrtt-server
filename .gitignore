@@ -1,0 +1,4 @@
+pm2.json
+node_modules/
+deploy.sh
+install.sh
