@@ -48,6 +48,10 @@ class TogglClient {
         return null;
       }
 
+      if (!projects) {
+        continue;
+      }
+
       for (const project of projects) {
         if (project.name === projectName) {
           projectId = project.id;
