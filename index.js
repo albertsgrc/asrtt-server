@@ -50,7 +50,11 @@ let maxIdleTime = 3 * 60;
 // Handlers
 app.get("/should-track", (req, res) => {
   res.setHeader("Content-Type", "application/json");
-  res.end(JSON.stringify({ maxIdleTime }));
+  if (maxIdleTime > 0) {
+    res.end(JSON.stringify({ maxIdleTime }));
+  } else {
+    res.end("{}");
+  }
 });
 
 app.use(json());
@@ -92,7 +96,11 @@ const stopWorking = async data => {
 const startWorking = async data => {
   const id = data.togglToken;
   workTrack[id].isWorking = true;
-  workTrack[id].gitBranch = data.gitBranch;
+
+  for (const key in data) {
+    workTrack[id][key] = data[key];
+  }
+
   const togglClient = new TogglClient(data.togglToken);
 
   const current = await togglClient.current();
@@ -108,6 +116,12 @@ app.post("/set-is-working", async (req, res) => {
     logger.error("bad request");
     res.statusCode = 400;
     res.end("Bad request");
+    return;
+  }
+
+  if (maxIdleTime == 0) {
+    logger.warn("declining to process set-is-working request");
+    res.end();
     return;
   }
 
@@ -167,6 +181,12 @@ app.post("/set-not-working", (req, res) => {
     return;
   }
 
+  if (maxIdleTime == 0) {
+    logger.warn("declining to process set-not-working request");
+    res.end();
+    return;
+  }
+
   const id = req.body.togglToken;
 
   if (!workTrack[id] || !workTrack[id].queue) {
@@ -187,12 +207,7 @@ app.post("/set-not-working", (req, res) => {
 });
 
 app.put("/max-idle-time", (req, res) => {
-  if (
-    !req.body ||
-    !req.body.password ||
-    !req.body.time ||
-    isNaN(req.body.time)
-  ) {
+  if (!req.body || !req.body.password || isNaN(req.body.time)) {
     logger.error("bad max-idle-time request");
     res.statusCode = 400;
     res.end("Bad request");
@@ -208,7 +223,24 @@ app.put("/max-idle-time", (req, res) => {
 
   maxIdleTime = parseInt(req.body.time);
 
-  logger.info(`Set max idle time to ${maxIdleTime}`);
+  if (maxIdleTime === 0) {
+    logger.info(`Disabling tracking`);
+
+    for (const id in workTrack) {
+      const entry = workTrack[id];
+
+      clearTimeout(entry.timeout);
+
+      entry.queue.push(async function() {
+        if (entry.isWorking) {
+          entry.isWorking = false;
+          stopWorking(entry);
+        }
+      });
+    }
+  } else {
+    logger.info(`Set max idle time to ${maxIdleTime}`);
+  }
 
   res.end();
 });
