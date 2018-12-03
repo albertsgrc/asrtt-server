@@ -125,7 +125,7 @@ app.post("/set-is-working", async (req, res) => {
     return;
   }
 
-  const { togglToken, gitBranch } = req.body;
+  const { togglToken, gitBranch, gitlabProject } = req.body;
 
   // Use toggl token as worker id
   const id = togglToken;
@@ -142,8 +142,11 @@ app.post("/set-is-working", async (req, res) => {
       await startWorking(req.body);
     } else {
       // Already working, check that the branch hasn't changed
-      if (gitBranch !== workTrack[id].gitBranch) {
-        logger.info(`[${id}]: branch change, restarting task`);
+      if (
+        gitBranch !== workTrack[id].gitBranch ||
+        gitlabProject !== workTrack[id].gitlabProject
+      ) {
+        logger.info(`[${id}]: branch or repository change, restarting task`);
         // If it has changed, stop current work timer, start new one
         await stopWorking(req.body);
         await startWorking(req.body);
